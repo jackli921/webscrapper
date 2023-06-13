@@ -1,12 +1,13 @@
 const puppeteer = require("puppeteer");
+const fs = require("fs");
 
 async function run() {
   let browser;
-  let products;
+  let models;
   try {
     browser = await puppeteer.connect({
       browserWSEndpoint:
-       "ws://localhost:9222/devtools/browser/9efcd9de-d9ca-44d2-bdbb-d928acdf41d8",
+      "ws://localhost:9222/devtools/browser/db740f40-cf85-466c-846e-a50608fdfe20",
       browserExecutablePath: "/usr/local/bin/chrome",
     });
 
@@ -14,37 +15,38 @@ async function run() {
     page.setDefaultNavigationTimeout(2 * 6 * 1000);
     await page.goto("https://bringatrailer.com/models/");
 
-    products = await page.evaluate(() => {
-      const productElements = document.querySelectorAll(
+    models = await page.evaluate(() => {
+      const linkElements = document.querySelectorAll(
         ".previous-listing-image-link"
       );
 
-      const products = [];
-      for (let i = 0; i < productElements.length; i++) {
-        const productNameElement = productElements[i].querySelector(
-          ".typography-body1.font-medium"
+      const models = [];
+      linkElements.forEach((element) => {
+        const modelElement = element.querySelector(
+          ".previous-listing-image-overlay-inner-cell"
         );
-        const productPriceElement = productElements[i].querySelector(
-          ".text-green-600 span"
-        );
+        const modelName = modelElement.innerText.trim();
+        const url = element.href;
+        models.push({ [String(modelName)]: url });
+      });
 
-        const productName = productNameElement
-          ? productNameElement.innerText.trim()
-          : "";
-        const productPrice = productPriceElement
-          ? productPriceElement.innerText.trim()
-          : "";
-
-        products.push({ name: productName, price: productPrice });
-      }
-
-      return products;
+      return models;
     });
   } catch (e) {
     console.log("Scrape failed", e);
   } finally {
-    console.log(products);
+    console.log(models);
     await browser?.close();
+    if (models.length > 0) {
+      const data = JSON.stringify(models, null, 2);
+      fs.writeFile("link.js", `const links = ${data};`, (err) => {
+        if (err) {
+          console.error("Error writing file:", err);
+        } else {
+          console.log("Data saved to link.js file.");
+        }
+      });
+    }
   }
 }
 
