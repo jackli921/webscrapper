@@ -1,6 +1,5 @@
 
-Steps to scrape comments and related information of one car page of bringatrailer.com 
-
+Steps to scrape comments and related information for a single page
 #1. load the page
 #2. wait 2s for the Show More <a> tag to load
 #3. check for visibility of <a> tag
@@ -10,8 +9,7 @@ Steps to scrape comments and related information of one car page of bringatraile
     //if reselect is true, keep looping
     //if reselect returns null, exit the for loop
 
-#5. scrape all elements within the parent comment div tag
-
+#6. scrape all elements within the parent comment div tag
 
 
 Steps to clean up the returned raw comments data
@@ -21,16 +19,14 @@ Steps to clean up the returned raw comments data
  comment-date: string,
  username: string,
  likes: number,
-
+ comment: string
 }   
 
 //for date
 class="comment-datetime"
 
-
 //for username
 data-bind="text: authorName"
-
 
 //for likes
 data-bind="text: authorLikesFormatted" 
